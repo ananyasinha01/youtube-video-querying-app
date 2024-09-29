@@ -16,7 +16,7 @@ groq_api_key = os.getenv("GROQ_API_KEY")  # Get the Groq API key from the enviro
 client = Groq(api_key=groq_api_key)
 
 # Proxy configuration
-proxy_url = "http://localhost:8080"  # This proxy points to your droplet or another proxy configuration
+proxy_url = "http://192.168.29.67:8080"  # This proxy points to your droplet or another proxy configuration
 
 # Prompt for summarization
 summary_prompt_template = """You are a YouTube video summarizer. You will be taking the transcript text
