@@ -8,9 +8,11 @@ from langchain.embeddings import HuggingFaceEmbeddings
 import faiss
 import numpy as np
 
+# Load environment variables
 load_dotenv()
 
-groq_api_key = os.getenv("GROQ_API_KEY")  
+# Set up Groq API
+groq_api_key = os.getenv("GROQ_API_KEY")  # Get the Groq API key from the environment
 client = Groq(api_key=groq_api_key)
 
 # Prompt for summarization
@@ -24,7 +26,7 @@ def extract_transcript_details(youtube_video_url):
         video_id = youtube_video_url.split("=")[1]
         transcript_text = YouTubeTranscriptApi.get_transcript(video_id)
 
-        return transcript_text
+        return transcript_text  # Return the list of dictionaries directly
     except Exception as e:
         st.error(f"Error fetching transcript: {str(e)}")
         return None
@@ -65,7 +67,10 @@ def create_transcript_chunks(transcript, block_size=30, overlap_size=5):
     
     return chunks
 
+# Streamlit app setup
 st.title("YouTube Video Summarizer and Querying")
+
+# Input for YouTube link
 youtube_link = st.text_input("Enter YouTube Video Link:")
 
 # Display video thumbnail
@@ -94,7 +99,7 @@ if st.button("Get Summarized Notes"):
             summary = generate_groq_summary(chunk, summary_prompt_template)
             summaries.append(summary)
 
-        # Map-reduce: Combine summaries and generate the final summary
+        # Combine summaries and generate the final summary
         combined_summary_text = " ".join(summaries)
         final_summary = generate_groq_summary(combined_summary_text, summary_prompt_template)
         st.markdown("## Final Summary:")
@@ -107,8 +112,8 @@ st.markdown("## Ask a question about the video:")
 question = st.text_input("Enter your question:")
 
 if st.button("Submit Question"):
-    if question.strip():
-        # Fetch transcript text
+    if question.strip():  # This checks if the question is not empty or just white spaces
+        # Fetch transcript text again
         transcript_text = extract_transcript_details(youtube_link)
 
         if transcript_text:
@@ -132,24 +137,27 @@ if st.button("Submit Question"):
             # Retrieve the corresponding chunks and their start times
             retrieved_chunks = [transcript_chunks[i] for i in I[0]]
 
-            # Combined prompt with retrieved chunks
+            # Create a combined prompt with retrieved chunks
             combined_prompt = f"You are an expert on the contents of the YouTube video transcript. If the question asked is not relevant to the video, simply say 'No relevant information found in the transcript.'. Answer concisely based on the following information:\n"
             for chunk in retrieved_chunks:
                 combined_prompt += f"{chunk['chunk_text']}\n"
 
             combined_prompt += f"Question: {question}\nAnswer: "
 
+            # Get the answer using Groq API
             final_answer = generate_groq_summary(combined_prompt, "Answer concisely, within 300 words.")
 
-            if final_answer.strip():
+            # Display the query result
+            if final_answer.strip():  # Check if the answer is not empty
                 st.markdown("## Answer to your question:")
                 st.write(final_answer)
 
+                # Display the start time of the chunk with the highest similarity
                 formatted_time = f"{int(retrieved_chunks[0]['start_time'] // 60):02}:{int(retrieved_chunks[0]['start_time'] % 60):02}"
-                st.write(f"Most relevant timestamp: {formatted_time}")
+                st.write(f"Check out this timestamp: {formatted_time}")
             else:
                 st.warning("No relevant information found in the transcript.")
         else:
             st.error("Failed to extract transcript.")
     else:
-        st.warning("Please enter a valid question before submitting.")
+        st.warning("Please enter a valid question before submitting.")  # This will display if the question is empty or only white spaces
