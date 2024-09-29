@@ -15,16 +15,20 @@ load_dotenv()
 groq_api_key = os.getenv("GROQ_API_KEY")  # Get the Groq API key from the environment
 client = Groq(api_key=groq_api_key)
 
+# Proxy configuration
+proxy_url = "http://localhost:8080"  # This proxy points to your droplet or another proxy configuration
+
 # Prompt for summarization
 summary_prompt_template = """You are a YouTube video summarizer. You will be taking the transcript text
 and summarizing the entire video, providing the important points within 250 words.
 Please summarize the text given here: """
 
-# Function to get transcript from YouTube video
+# Function to get transcript from YouTube video with proxy configuration
 def extract_transcript_details(youtube_video_url):
     try:
         video_id = youtube_video_url.split("=")[1]
-        transcript_text = YouTubeTranscriptApi.get_transcript(video_id)
+        # Use proxy to avoid getting blocked by YouTube
+        transcript_text = YouTubeTranscriptApi.get_transcript(video_id, proxies={"https": proxy_url})
 
         return transcript_text  # Return the list of dictionaries directly
     except Exception as e:
