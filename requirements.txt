@@ -1,0 +1,8 @@
+python-dotenv
+streamlit
+youtube_transcript_api
+groq
+langchain
+faiss-cpu
+sentence-transformers
+numpy
